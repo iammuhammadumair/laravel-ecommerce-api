@@ -41,6 +41,9 @@ use Illuminate\Contracts\Validation\Validator;
         )
     ]
 )]
+/**
+ * ProductStoreRequest is a request class for creating a new product.
+ */
 class ProductStoreRequest extends FormRequest
 {
     /**
@@ -246,7 +249,7 @@ class ProductStoreRequest extends FormRequest
      */
     public function withValidator(Validator $validator): void
     {
-        $validator->after(function ($validator) {
+        $validator->after(function ($validator): void {
             // Custom validation: If compare_price is set, ensure it makes sense
             if ($this->filled('compare_price') && $this->filled('price')) {
                 if ($this->input('compare_price') <= $this->input('price')) {
