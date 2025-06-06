@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductInventoryUpdateRequest;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 #[OA\Tag(
@@ -404,6 +404,7 @@ class ProductInventoryController extends Controller
                         } else {
                             $errors[] = "Product ID {$productData['id']}: Insufficient inventory";
                             $failed++;
+
                             continue 2;
                         }
                         break;
@@ -528,6 +529,7 @@ class ProductInventoryController extends Controller
                         } else {
                             $errors[] = "Variant ID {$variantData['id']}: Insufficient inventory";
                             $failed++;
+
                             continue 2;
                         }
                         break;
@@ -550,4 +552,4 @@ class ProductInventoryController extends Controller
             ]
         ]);
     }
-} 
+}

@@ -246,7 +246,7 @@ class ProductStoreRequest extends FormRequest
             // Custom validation: If compare_price is set, ensure it makes sense
             if ($this->filled('compare_price') && $this->filled('price')) {
                 if ($this->input('compare_price') <= $this->input('price')) {
-                    $validator->errors()->add('compare_price', 
+                    $validator->errors()->add('compare_price',
                         'Compare price should typically be higher than the regular price to show savings.');
                 }
             }

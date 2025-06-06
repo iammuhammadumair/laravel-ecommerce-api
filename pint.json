@@ -1,0 +1,7 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "single_quote": false,
+        "trailing_comma_in_multiline": false
+    }
+}

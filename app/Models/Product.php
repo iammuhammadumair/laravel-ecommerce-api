@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -110,10 +110,10 @@ class Product extends Model
 
     public function getDiscountPercentageAttribute(): ?float
     {
-        if (!$this->is_on_sale) {
+        if (! $this->is_on_sale) {
             return null;
         }
-        
+
         return round((($this->compare_price - $this->price) / $this->compare_price) * 100, 2);
     }
 
@@ -128,7 +128,7 @@ class Product extends Model
         if ($this->hasVariants()) {
             return $this->variants()->sum('inventory_quantity');
         }
-        
+
         return $this->inventory_quantity;
     }
 
@@ -139,12 +139,13 @@ class Product extends Model
 
     public function decrementInventory(int $quantity = 1): bool
     {
-        if (!$this->track_inventory) {
+        if (! $this->track_inventory) {
             return true;
         }
 
         if ($this->inventory_quantity >= $quantity) {
             $this->decrement('inventory_quantity', $quantity);
+
             return true;
         }
 
