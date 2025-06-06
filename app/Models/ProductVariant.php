@@ -5,8 +5,48 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use OpenApi\Attributes as OA;
 
+/**
+ * ProductVariant Model
+ *
+ * Represents a specific variant of a product with its unique attributes and inventory.
+ *
+ * @property int $id The unique identifier of the variant
+ * @property int $product_id The ID of the parent product
+ * @property string $title The display title of the variant
+ * @property string $sku The unique Stock Keeping Unit
+ * @property float $price The variant's price
+ * @property float|null $compare_price The original/compare price for sale items
+ * @property int $inventory_quantity The available quantity in stock
+ * @property bool $track_inventory Whether inventory tracking is enabled
+ * @property string $inventory_policy The inventory policy (deny or continue)
+ * @property string $fulfillment_service The fulfillment service type
+ * @property string $option1 First option value (e.g., size)
+ * @property string|null $option2 Second option value (e.g., color)
+ * @property string|null $option3 Third option value (e.g., material)
+ * @property float $weight The variant's weight
+ * @property string $weight_unit Weight unit (kg, g, lb, oz)
+ * @property string|null $barcode The variant's barcode/SKU
+ * @property array<string> $image Array of variant-specific image URLs
+ * @property bool $requires_shipping Whether shipping is required
+ * @property bool $taxable Whether the variant is taxable
+ * @property int $position The display position/order
+ * @property \Carbon\Carbon $created_at When the variant was created
+ * @property \Carbon\Carbon $updated_at When the variant was last updated
+ * 
+ * @property-read bool $is_on_sale Whether the variant is currently on sale
+ * @property-read float|null $discount_percentage Calculated discount percentage if on sale
+ * @property-read string $formatted_price Formatted price with currency
+ * @property-read array<string> $options Array of all option values
+ * @property-read string $display_title Generated display title from options
+ * 
+ * @property-read Product $product The parent product relationship
+ * 
+ * 
+ * @mixin \Eloquent
+ */
 #[OA\Schema(
     schema: "ProductVariant",
     title: "ProductVariant",
@@ -39,6 +79,13 @@ use OpenApi\Attributes as OA;
 )]
 class ProductVariant extends Model
 {
+    use HasFactory;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<string>
+     */
     protected $fillable = [
         'product_id',
         'title',
@@ -61,6 +108,11 @@ class ProductVariant extends Model
         'position',
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
         'price' => 'decimal:2',
         'compare_price' => 'decimal:2',
@@ -73,10 +125,12 @@ class ProductVariant extends Model
         'image' => 'array',
     ];
 
-    
     /**
      * Get the product that owns this variant.
      * 
+     * Each variant belongs to a single product and inherits certain
+     * attributes from its parent product.
+     *
      * @return BelongsTo<Product, $this>
      */
     public function product(): BelongsTo
@@ -84,10 +138,12 @@ class ProductVariant extends Model
         return $this->belongsTo(Product::class);
     }
 
-    // Scopes
     /**
      * Scope a query to only include variants that are in stock.
      * 
+     * In-stock variants have a positive inventory quantity and
+     * are available for purchase.
+     *
      * @param Builder<ProductVariant> $query
      * @return Builder<ProductVariant>
      */
@@ -99,7 +155,11 @@ class ProductVariant extends Model
     /**
      * Scope a query to filter by option value.
      * 
+     * Filter variants by a specific option value (e.g., size="Small" or color="Red").
+     *
      * @param Builder<ProductVariant> $query
+     * @param string $option The option field to filter (option1, option2, option3)
+     * @param string $value The option value to match
      * @return Builder<ProductVariant>
      */
     public function scopeByOption(Builder $query, string $option, string $value): Builder
@@ -107,17 +167,36 @@ class ProductVariant extends Model
         return $query->where($option, $value);
     }
 
-    // Accessors & Mutators
+    /**
+     * Get the formatted price with currency symbol.
+     *
+     * @return string
+     */
     public function getFormattedPriceAttribute(): string
     {
         return number_format((float) $this->price, 2);
     }
 
+    /**
+     * Determine if the variant is on sale.
+     * 
+     * A variant is considered on sale when it has a compare price
+     * that is higher than the current price.
+     *
+     * @return bool
+     */
     public function getIsOnSaleAttribute(): bool
     {
         return $this->compare_price && $this->compare_price > $this->price;
     }
 
+    /**
+     * Calculate the discount percentage if the variant is on sale.
+     * 
+     * Returns null if the variant is not on sale.
+     *
+     * @return float|null
+     */
     public function getDiscountPercentageAttribute(): ?float
     {
         if (! $this->is_on_sale) {
@@ -130,6 +209,9 @@ class ProductVariant extends Model
     /**
      * Get the variant options as an array.
      * 
+     * Returns an array of non-null option values that define this variant
+     * (e.g., ["Small", "Red"] for a small red t-shirt).
+     *
      * @return array<string>
      */
     public function getOptionsAttribute(): array
@@ -141,6 +223,14 @@ class ProductVariant extends Model
         ]);
     }
 
+    /**
+     * Get the display title for the variant.
+     * 
+     * If options are set, returns them joined with " / ".
+     * Otherwise returns the variant title.
+     *
+     * @return string
+     */
     public function getDisplayTitleAttribute(): string
     {
         $options = $this->options;
@@ -148,12 +238,26 @@ class ProductVariant extends Model
         return $options ? implode(' / ', $options) : $this->title;
     }
 
-    // Business Logic Methods
+    /**
+     * Check if the variant is in stock.
+     * 
+     * A variant is considered in stock if it has a positive inventory quantity.
+     *
+     * @return bool
+     */
     public function isInStock(): bool
     {
         return $this->inventory_quantity > 0;
     }
 
+    /**
+     * Check if the variant can fulfill the requested quantity.
+     * 
+     * Takes into account inventory tracking settings and inventory policy.
+     *
+     * @param int $quantity The quantity to check
+     * @return bool Whether the variant can fulfill the quantity
+     */
     public function canFulfill(int $quantity = 1): bool
     {
         if (! $this->track_inventory) {
@@ -167,6 +271,15 @@ class ProductVariant extends Model
         return $this->inventory_quantity >= $quantity;
     }
 
+    /**
+     * Decrement the variant's inventory by the specified quantity.
+     * 
+     * Only decrements if inventory tracking is enabled and there is
+     * sufficient stock available.
+     *
+     * @param int $quantity The quantity to decrement
+     * @return bool Whether the decrement was successful
+     */
     public function decrementInventory(int $quantity = 1): bool
     {
         if (! $this->track_inventory) {
@@ -182,6 +295,14 @@ class ProductVariant extends Model
         return false;
     }
 
+    /**
+     * Increment the variant's inventory by the specified quantity.
+     * 
+     * Only increments if inventory tracking is enabled.
+     *
+     * @param int $quantity The quantity to increment
+     * @return void
+     */
     public function incrementInventory(int $quantity = 1): void
     {
         if ($this->track_inventory) {
