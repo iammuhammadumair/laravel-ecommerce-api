@@ -33,7 +33,7 @@ return new class extends Migration
             $table->boolean('taxable')->default(true);
             $table->integer('position')->default(1);
             $table->timestamps();
-            
+
             $table->index(['product_id', 'position']);
             $table->index('sku');
         });

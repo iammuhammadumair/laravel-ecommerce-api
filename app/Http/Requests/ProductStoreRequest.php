@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
+use Illuminate\Contracts\Validation\Validator;
 
 #[OA\Schema(
     schema: "ProductRequest",
@@ -169,6 +170,7 @@ class ProductStoreRequest extends FormRequest
 
     /**
      * Get the custom validation messages.
+     * @return array<string, string>
      */
     public function messages(): array
     {
@@ -194,6 +196,7 @@ class ProductStoreRequest extends FormRequest
 
     /**
      * Get custom attributes for validator errors.
+     * @return array<string, string>
      */
     public function attributes(): array
     {
@@ -239,14 +242,15 @@ class ProductStoreRequest extends FormRequest
 
     /**
      * Configure the validator instance.
+     * @return void
      */
-    public function withValidator($validator): void
+    public function withValidator(Validator $validator): void
     {
         $validator->after(function ($validator) {
             // Custom validation: If compare_price is set, ensure it makes sense
             if ($this->filled('compare_price') && $this->filled('price')) {
                 if ($this->input('compare_price') <= $this->input('price')) {
-                    $validator->errors()->add('compare_price', 
+                    $validator->errors()->add('compare_price',
                         'Compare price should typically be higher than the regular price to show savings.');
                 }
             }

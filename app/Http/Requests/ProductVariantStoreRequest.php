@@ -152,6 +152,7 @@ class ProductVariantStoreRequest extends FormRequest
 
     /**
      * Get the custom validation messages.
+     * @return array<string, string>
      */
     public function messages(): array
     {
@@ -170,6 +171,7 @@ class ProductVariantStoreRequest extends FormRequest
 
     /**
      * Get custom attributes for validator errors.
+     * @return array<string, string>
      */
     public function attributes(): array
     {

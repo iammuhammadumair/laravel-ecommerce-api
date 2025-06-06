@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Builder;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -81,17 +81,34 @@ class Product extends Model
     ];
 
     // Relationships
+    /**
+     * Get the variants for this product.
+     * 
+     * @return HasMany<ProductVariant, $this>
+     */
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class)->orderBy('position');
     }
 
     // Scopes
+    /**
+     * Scope a query to only include active products.
+     * 
+     * @param Builder<Product> $query
+     * @return Builder<Product>
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 'active');
     }
 
+    /**
+     * Scope a query to only include products that are in stock.
+     * 
+     * @param Builder<Product> $query
+     * @return Builder<Product>
+     */
     public function scopeInStock(Builder $query): Builder
     {
         return $query->where('inventory_quantity', '>', 0);
@@ -100,7 +117,7 @@ class Product extends Model
     // Accessors & Mutators
     public function getFormattedPriceAttribute(): string
     {
-        return number_format($this->price, 2);
+        return number_format((float) $this->price, 2);
     }
 
     public function getIsOnSaleAttribute(): bool
@@ -110,10 +127,10 @@ class Product extends Model
 
     public function getDiscountPercentageAttribute(): ?float
     {
-        if (!$this->is_on_sale) {
+        if (! $this->is_on_sale) {
             return null;
         }
-        
+
         return round((($this->compare_price - $this->price) / $this->compare_price) * 100, 2);
     }
 
@@ -128,7 +145,7 @@ class Product extends Model
         if ($this->hasVariants()) {
             return $this->variants()->sum('inventory_quantity');
         }
-        
+
         return $this->inventory_quantity;
     }
 
@@ -139,12 +156,13 @@ class Product extends Model
 
     public function decrementInventory(int $quantity = 1): bool
     {
-        if (!$this->track_inventory) {
+        if (! $this->track_inventory) {
             return true;
         }
 
         if ($this->inventory_quantity >= $quantity) {
             $this->decrement('inventory_quantity', $quantity);
+
             return true;
         }
 

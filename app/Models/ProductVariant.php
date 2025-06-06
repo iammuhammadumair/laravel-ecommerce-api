@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Builder;
 use OpenApi\Attributes as OA;
 
 #[OA\Schema(
@@ -73,18 +73,35 @@ class ProductVariant extends Model
         'image' => 'array',
     ];
 
-    // Relationships
+    
+    /**
+     * Get the product that owns this variant.
+     * 
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
     // Scopes
+    /**
+     * Scope a query to only include variants that are in stock.
+     * 
+     * @param Builder<ProductVariant> $query
+     * @return Builder<ProductVariant>
+     */
     public function scopeInStock(Builder $query): Builder
     {
         return $query->where('inventory_quantity', '>', 0);
     }
 
+    /**
+     * Scope a query to filter by option value.
+     * 
+     * @param Builder<ProductVariant> $query
+     * @return Builder<ProductVariant>
+     */
     public function scopeByOption(Builder $query, string $option, string $value): Builder
     {
         return $query->where($option, $value);
@@ -93,7 +110,7 @@ class ProductVariant extends Model
     // Accessors & Mutators
     public function getFormattedPriceAttribute(): string
     {
-        return number_format($this->price, 2);
+        return number_format((float) $this->price, 2);
     }
 
     public function getIsOnSaleAttribute(): bool
@@ -103,13 +120,18 @@ class ProductVariant extends Model
 
     public function getDiscountPercentageAttribute(): ?float
     {
-        if (!$this->is_on_sale) {
+        if (! $this->is_on_sale) {
             return null;
         }
-        
+
         return round((($this->compare_price - $this->price) / $this->compare_price) * 100, 2);
     }
 
+    /**
+     * Get the variant options as an array.
+     * 
+     * @return array<string>
+     */
     public function getOptionsAttribute(): array
     {
         return array_filter([
@@ -122,6 +144,7 @@ class ProductVariant extends Model
     public function getDisplayTitleAttribute(): string
     {
         $options = $this->options;
+
         return $options ? implode(' / ', $options) : $this->title;
     }
 
@@ -133,7 +156,7 @@ class ProductVariant extends Model
 
     public function canFulfill(int $quantity = 1): bool
     {
-        if (!$this->track_inventory) {
+        if (! $this->track_inventory) {
             return true;
         }
 
@@ -146,12 +169,13 @@ class ProductVariant extends Model
 
     public function decrementInventory(int $quantity = 1): bool
     {
-        if (!$this->track_inventory) {
+        if (! $this->track_inventory) {
             return true;
         }
 
         if ($this->canFulfill($quantity)) {
             $this->decrement('inventory_quantity', $quantity);
+
             return true;
         }
 

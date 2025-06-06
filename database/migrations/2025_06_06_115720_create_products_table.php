@@ -30,7 +30,7 @@ return new class extends Migration
             $table->boolean('requires_shipping')->default(true);
             $table->json('seo')->nullable(); // title, description, keywords
             $table->timestamps();
-            
+
             $table->index(['status', 'created_at']);
             $table->index('sku');
         });
