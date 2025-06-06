@@ -1,0 +1,66 @@
+# Cursor Rules for Laravel 12 Project
+
+## Project Overview
+This is a Laravel 12 project with a product management system including products and product variants.
+
+## Code Style & Standards
+- Follow PSR-12 coding standards
+- Use strict typing where possible
+- Prefer explicit return types for methods
+- Use meaningful variable and method names
+- Add proper PHPDoc comments for classes and methods
+
+## Laravel Specific Rules
+- Use Eloquent relationships instead of manual joins
+- Prefer resource controllers for CRUD operations
+- Use form request validation for complex validation rules
+- Follow Laravel naming conventions:
+  - Models: singular PascalCase (Product, ProductVariant)
+  - Controllers: PascalCase with Controller suffix
+  - Database tables: plural snake_case (products, product_variants)
+  - Migrations: descriptive snake_case with timestamp
+
+## API Development
+- Always return JSON responses with consistent structure
+- Include success/error status in API responses
+- Use proper HTTP status codes
+- Implement proper error handling with try-catch blocks
+- Add pagination for list endpoints
+- Include filtering and search capabilities
+
+## Database
+- Use migrations for all database changes
+- Add proper indexes for performance
+- Use foreign key constraints
+- Include timestamps on all tables
+- Use appropriate data types (decimal for money, json for arrays)
+
+## File Organization
+- Controllers in app/Http/Controllers/Api/ for API endpoints
+- Models in app/Models/
+- Migrations in database/migrations/
+- Routes in routes/api.php for API routes
+
+## Security
+- Validate all input data
+- Use mass assignment protection ($fillable)
+- Sanitize user input
+- Use proper authentication middleware where needed
+
+## Performance
+- Use eager loading to prevent N+1 queries
+- Add database indexes for frequently queried columns
+- Implement proper caching strategies
+- Limit pagination results
+
+## Testing
+- Write feature tests for API endpoints
+- Test both success and error scenarios
+- Use factories for test data generation
+- Mock external dependencies
+
+## Documentation
+- Document API endpoints with clear examples
+- Include request/response formats
+- Document model relationships
+- Add inline comments for complex business logic 

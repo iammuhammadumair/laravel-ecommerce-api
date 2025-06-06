@@ -1,0 +1,2430 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Ecommerce API",
+        "version": "0.1"
+    },
+    "servers": [
+        {
+            "url": "http://laravel-12.test"
+        },
+        {
+            "url": "http://localhost:8000/api"
+        },
+        {
+            "url": "http://localhost:8000/api/v1"
+        },
+        {
+            "url": "http://localhost:8000/api/v2"
+        }
+    ],
+    "paths": {
+        "/api/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get list of products",
+                "description": "Retrieve a paginated list of products with optional filtering and search",
+                "operationId": "getProducts",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter by product status",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "active",
+                                "inactive",
+                                "archived"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "vendor",
+                        "in": "query",
+                        "description": "Filter by vendor",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "product_type",
+                        "in": "query",
+                        "description": "Filter by product type",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "in_stock",
+                        "in": "query",
+                        "description": "Filter by stock availability",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search in name, description, or SKU",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "Sort by field",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "created_at"
+                        }
+                    },
+                    {
+                        "name": "sort_order",
+                        "in": "query",
+                        "description": "Sort order",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "desc",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page (max 100)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Product"
+                                            }
+                                        },
+                                        "pagination": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer"
+                                                },
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "total": {
+                                                    "type": "integer"
+                                                },
+                                                "last_page": {
+                                                    "type": "integer"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Create a new product",
+                "description": "Create a new product with all required and optional fields",
+                "operationId": "createProduct",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Product created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product created successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/products/{id}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Get a specific product",
+                "description": "Retrieve a single product by ID including its variants",
+                "operationId": "getProduct",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful operation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Update a product",
+                "description": "Update an existing product by ID",
+                "operationId": "updateProduct",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Product updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product updated successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Delete a product",
+                "description": "Delete a product and all its variants",
+                "operationId": "deleteProduct",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/products/{id}/inventory": {
+            "patch": {
+                "tags": [
+                    "Inventory Management"
+                ],
+                "summary": "Update product inventory",
+                "description": "Update inventory quantity for a specific product using set, increment, or decrement operations",
+                "operationId": "0d594c792c365b1d61b11af8178788db",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "quantity",
+                                    "operation"
+                                ],
+                                "properties": {
+                                    "quantity": {
+                                        "description": "Quantity to set, increment, or decrement",
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "operation": {
+                                        "description": "Inventory operation type",
+                                        "type": "string",
+                                        "enum": [
+                                            "set",
+                                            "increment",
+                                            "decrement"
+                                        ],
+                                        "example": "set"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Product inventory updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product inventory updated successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/Product"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Insufficient inventory",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Insufficient inventory"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to update inventory"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/variants/{id}/inventory": {
+            "patch": {
+                "tags": [
+                    "Inventory Management"
+                ],
+                "summary": "Update variant inventory",
+                "description": "Update inventory quantity for a specific product variant using set, increment, or decrement operations",
+                "operationId": "4cd5bd7f4c4cc871821e83c2e0ae2db4",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product variant ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "quantity",
+                                    "operation"
+                                ],
+                                "properties": {
+                                    "quantity": {
+                                        "description": "Quantity to set, increment, or decrement",
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "operation": {
+                                        "description": "Inventory operation type",
+                                        "type": "string",
+                                        "enum": [
+                                            "set",
+                                            "increment",
+                                            "decrement"
+                                        ],
+                                        "example": "set"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Variant inventory updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Variant inventory updated successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProductVariant"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Insufficient inventory",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Insufficient inventory"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product variant not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product variant not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to update inventory"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/inventory/products/bulk": {
+            "patch": {
+                "tags": [
+                    "Inventory Management"
+                ],
+                "summary": "Bulk update product inventory",
+                "description": "Update inventory for multiple products in a single request",
+                "operationId": "d2abd3c082b248fff87272093a135c9e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "products"
+                                ],
+                                "properties": {
+                                    "products": {
+                                        "description": "Array of products with inventory updates",
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "id",
+                                                "quantity",
+                                                "operation"
+                                            ],
+                                            "properties": {
+                                                "id": {
+                                                    "description": "Product ID",
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "quantity": {
+                                                    "description": "Quantity",
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "operation": {
+                                                    "description": "Operation type",
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "set",
+                                                        "increment",
+                                                        "decrement"
+                                                    ],
+                                                    "example": "set"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Bulk inventory update completed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Bulk inventory update completed"
+                                        },
+                                        "results": {
+                                            "properties": {
+                                                "successful": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "failed": {
+                                                    "type": "integer",
+                                                    "example": 0
+                                                },
+                                                "errors": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/inventory/variants/bulk": {
+            "patch": {
+                "tags": [
+                    "Inventory Management"
+                ],
+                "summary": "Bulk update variant inventory",
+                "description": "Update inventory for multiple product variants in a single request",
+                "operationId": "c3b5f6092fcb85fc3c637706c01864e9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "variants"
+                                ],
+                                "properties": {
+                                    "variants": {
+                                        "description": "Array of variants with inventory updates",
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "id",
+                                                "quantity",
+                                                "operation"
+                                            ],
+                                            "properties": {
+                                                "id": {
+                                                    "description": "Variant ID",
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "quantity": {
+                                                    "description": "Quantity",
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "operation": {
+                                                    "description": "Operation type",
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "set",
+                                                        "increment",
+                                                        "decrement"
+                                                    ],
+                                                    "example": "set"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Bulk inventory update completed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Bulk inventory update completed"
+                                        },
+                                        "results": {
+                                            "properties": {
+                                                "successful": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "failed": {
+                                                    "type": "integer",
+                                                    "example": 0
+                                                },
+                                                "errors": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/variants": {
+            "get": {
+                "tags": [
+                    "Product Variants"
+                ],
+                "summary": "Get all product variants",
+                "description": "Retrieve a paginated list of product variants with filtering and search capabilities",
+                "operationId": "512692fb8f90726993dec998dd58d249",
+                "parameters": [
+                    {
+                        "name": "product_id",
+                        "in": "query",
+                        "description": "Filter by product ID",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "option1",
+                        "in": "query",
+                        "description": "Filter by option 1 value",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Red"
+                        }
+                    },
+                    {
+                        "name": "option2",
+                        "in": "query",
+                        "description": "Filter by option 2 value",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Large"
+                        }
+                    },
+                    {
+                        "name": "option3",
+                        "in": "query",
+                        "description": "Filter by option 3 value",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Cotton"
+                        }
+                    },
+                    {
+                        "name": "in_stock",
+                        "in": "query",
+                        "description": "Filter by stock availability",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "example": true
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Search in variant title, SKU, or barcode",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "shirt"
+                        }
+                    },
+                    {
+                        "name": "sort_by",
+                        "in": "query",
+                        "description": "Field to sort by",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "position",
+                                "title",
+                                "price",
+                                "created_at"
+                            ],
+                            "example": "position"
+                        }
+                    },
+                    {
+                        "name": "sort_order",
+                        "in": "query",
+                        "description": "Sort order",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "asc",
+                                "desc"
+                            ],
+                            "example": "asc"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of items per page (max 100)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 100,
+                            "minimum": 1,
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product variants retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ProductVariant"
+                                            }
+                                        },
+                                        "pagination": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 50
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 4
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Product Variants"
+                ],
+                "summary": "Create a new product variant",
+                "description": "Create a new product variant for an existing product",
+                "operationId": "8e5e4d618f8f4eb1388f3b3d6e45e9fe",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductVariantRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Product variant created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product variant created successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProductVariant"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to create product variant"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/variants/{id}": {
+            "get": {
+                "tags": [
+                    "Product Variants"
+                ],
+                "summary": "Get a specific product variant",
+                "description": "Retrieve details of a specific product variant by ID",
+                "operationId": "cc7bcd9b921a1f0fdc3d544ab6cb4460",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product variant ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product variant retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProductVariant"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product variant not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product variant not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Product Variants"
+                ],
+                "summary": "Update a product variant",
+                "description": "Update an existing product variant",
+                "operationId": "1e5a0c0631a2802b50a6bf1fff7b7c68",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product variant ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProductVariantUpdateRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Product variant updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product variant updated successfully"
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProductVariant"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product variant not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product variant not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to update product variant"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Product Variants"
+                ],
+                "summary": "Delete a product variant",
+                "description": "Delete a specific product variant",
+                "operationId": "64190e58bd9fdcfa692fc6440af24763",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Product variant ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product variant deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product variant deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product variant not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product variant not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to delete product variant"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/products/{productId}/variants": {
+            "get": {
+                "tags": [
+                    "Product Variants"
+                ],
+                "summary": "Get variants for a specific product",
+                "description": "Retrieve all variants for a specific product ordered by position",
+                "operationId": "e84eb86b9a1f819d12007f2e9eae221c",
+                "parameters": [
+                    {
+                        "name": "productId",
+                        "in": "path",
+                        "description": "Product ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Product variants retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/ProductVariant"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Product not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Product not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/variants/positions": {
+            "patch": {
+                "tags": [
+                    "Product Variants"
+                ],
+                "summary": "Bulk update variant positions",
+                "description": "Update positions for multiple product variants in bulk",
+                "operationId": "9599cc39524bda4ab1c5bba883f0c859",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "variants"
+                                ],
+                                "properties": {
+                                    "variants": {
+                                        "description": "Array of variants with their new positions",
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "id",
+                                                "position"
+                                            ],
+                                            "properties": {
+                                                "id": {
+                                                    "description": "Variant ID",
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "position": {
+                                                    "description": "New position",
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Variant positions updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Variant positions updated successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Failed to update positions"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "ProductRequest": {
+                "title": "ProductRequest",
+                "description": "Product creation request",
+                "required": [
+                    "name",
+                    "sku",
+                    "price"
+                ],
+                "properties": {
+                    "name": {
+                        "description": "Product name",
+                        "type": "string",
+                        "example": "T-Shirt"
+                    },
+                    "description": {
+                        "description": "Product description",
+                        "type": "string",
+                        "example": "A comfortable cotton t-shirt"
+                    },
+                    "sku": {
+                        "description": "Stock Keeping Unit",
+                        "type": "string",
+                        "example": "TSH-001"
+                    },
+                    "price": {
+                        "description": "Product price",
+                        "type": "number",
+                        "format": "float",
+                        "example": 29.99
+                    },
+                    "compare_price": {
+                        "description": "Compare at price",
+                        "type": "number",
+                        "format": "float",
+                        "example": 39.99
+                    },
+                    "inventory_quantity": {
+                        "description": "Initial inventory quantity",
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "track_inventory": {
+                        "description": "Whether to track inventory",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "status": {
+                        "description": "Product status",
+                        "type": "string",
+                        "enum": [
+                            "active",
+                            "inactive",
+                            "archived"
+                        ],
+                        "example": "active"
+                    },
+                    "vendor": {
+                        "description": "Product vendor",
+                        "type": "string",
+                        "example": "Brand Name"
+                    },
+                    "product_type": {
+                        "description": "Product type/category",
+                        "type": "string",
+                        "example": "Clothing"
+                    },
+                    "tags": {
+                        "description": "Product tags",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "cotton",
+                            "casual"
+                        ]
+                    },
+                    "images": {
+                        "description": "Product images",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "image1.jpg",
+                            "image2.jpg"
+                        ]
+                    },
+                    "weight": {
+                        "description": "Product weight",
+                        "type": "number",
+                        "format": "float",
+                        "example": 0.3
+                    },
+                    "weight_unit": {
+                        "description": "Weight unit",
+                        "type": "string",
+                        "enum": [
+                            "kg",
+                            "g",
+                            "lb",
+                            "oz"
+                        ],
+                        "example": "kg"
+                    },
+                    "requires_shipping": {
+                        "description": "Whether product requires shipping",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "seo": {
+                        "description": "SEO metadata",
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "example": "Comfortable Cotton T-Shirt"
+                            },
+                            "description": {
+                                "type": "string",
+                                "example": "Meta description for SEO"
+                            },
+                            "keywords": {
+                                "type": "string",
+                                "example": "t-shirt, cotton, clothing"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "ProductUpdateRequest": {
+                "title": "ProductUpdateRequest",
+                "description": "Product update request (all fields optional)",
+                "properties": {
+                    "name": {
+                        "description": "Product name",
+                        "type": "string",
+                        "example": "T-Shirt"
+                    },
+                    "description": {
+                        "description": "Product description",
+                        "type": "string",
+                        "example": "A comfortable cotton t-shirt"
+                    },
+                    "sku": {
+                        "description": "Stock Keeping Unit",
+                        "type": "string",
+                        "example": "TSH-001"
+                    },
+                    "price": {
+                        "description": "Product price",
+                        "type": "number",
+                        "format": "float",
+                        "example": 29.99
+                    },
+                    "compare_price": {
+                        "description": "Compare at price",
+                        "type": "number",
+                        "format": "float",
+                        "example": 39.99
+                    },
+                    "inventory_quantity": {
+                        "description": "Inventory quantity",
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "track_inventory": {
+                        "description": "Whether to track inventory",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "status": {
+                        "description": "Product status",
+                        "type": "string",
+                        "enum": [
+                            "active",
+                            "inactive",
+                            "archived"
+                        ],
+                        "example": "active"
+                    },
+                    "vendor": {
+                        "description": "Product vendor",
+                        "type": "string",
+                        "example": "Brand Name"
+                    },
+                    "product_type": {
+                        "description": "Product type/category",
+                        "type": "string",
+                        "example": "Clothing"
+                    },
+                    "tags": {
+                        "description": "Product tags",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "cotton",
+                            "casual"
+                        ]
+                    },
+                    "images": {
+                        "description": "Product images",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "image1.jpg",
+                            "image2.jpg"
+                        ]
+                    },
+                    "weight": {
+                        "description": "Product weight",
+                        "type": "number",
+                        "format": "float",
+                        "example": 0.3
+                    },
+                    "weight_unit": {
+                        "description": "Weight unit",
+                        "type": "string",
+                        "enum": [
+                            "kg",
+                            "g",
+                            "lb",
+                            "oz"
+                        ],
+                        "example": "kg"
+                    },
+                    "requires_shipping": {
+                        "description": "Whether product requires shipping",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "seo": {
+                        "description": "SEO metadata",
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "example": "Comfortable Cotton T-Shirt"
+                            },
+                            "description": {
+                                "type": "string",
+                                "example": "Meta description for SEO"
+                            },
+                            "keywords": {
+                                "type": "string",
+                                "example": "t-shirt, cotton, clothing"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "ProductVariantRequest": {
+                "title": "ProductVariantRequest",
+                "description": "Product variant creation request",
+                "required": [
+                    "product_id",
+                    "title"
+                ],
+                "properties": {
+                    "product_id": {
+                        "description": "Product ID",
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "title": {
+                        "description": "Variant title",
+                        "type": "string",
+                        "example": "Small / Red"
+                    },
+                    "sku": {
+                        "description": "Stock Keeping Unit",
+                        "type": "string",
+                        "example": "TSH-001-S-RED"
+                    },
+                    "price": {
+                        "description": "Variant price",
+                        "type": "number",
+                        "format": "float",
+                        "example": 29.99
+                    },
+                    "compare_price": {
+                        "description": "Compare at price",
+                        "type": "number",
+                        "format": "float",
+                        "example": 39.99
+                    },
+                    "inventory_quantity": {
+                        "description": "Initial inventory quantity",
+                        "type": "integer",
+                        "example": 25
+                    },
+                    "track_inventory": {
+                        "description": "Whether to track inventory",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "inventory_policy": {
+                        "description": "Inventory policy",
+                        "type": "string",
+                        "enum": [
+                            "deny",
+                            "continue"
+                        ],
+                        "example": "deny"
+                    },
+                    "fulfillment_service": {
+                        "description": "Fulfillment service",
+                        "type": "string",
+                        "example": "manual"
+                    },
+                    "option1": {
+                        "description": "Option 1 value",
+                        "type": "string",
+                        "example": "Small"
+                    },
+                    "option2": {
+                        "description": "Option 2 value",
+                        "type": "string",
+                        "example": "Red"
+                    },
+                    "option3": {
+                        "description": "Option 3 value",
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "weight": {
+                        "description": "Variant weight",
+                        "type": "number",
+                        "format": "float",
+                        "example": 0.3
+                    },
+                    "weight_unit": {
+                        "description": "Weight unit",
+                        "type": "string",
+                        "enum": [
+                            "kg",
+                            "g",
+                            "lb",
+                            "oz"
+                        ],
+                        "example": "kg"
+                    },
+                    "barcode": {
+                        "description": "Barcode",
+                        "type": "string",
+                        "example": "1234567890123"
+                    },
+                    "image": {
+                        "description": "Variant images",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "variant1.jpg"
+                        ]
+                    },
+                    "requires_shipping": {
+                        "description": "Whether variant requires shipping",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "taxable": {
+                        "description": "Whether variant is taxable",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "position": {
+                        "description": "Variant position",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "ProductVariantUpdateRequest": {
+                "title": "ProductVariantUpdateRequest",
+                "description": "Product variant update request (all fields optional)",
+                "properties": {
+                    "title": {
+                        "description": "Variant title",
+                        "type": "string",
+                        "example": "Small / Red"
+                    },
+                    "sku": {
+                        "description": "Stock Keeping Unit",
+                        "type": "string",
+                        "example": "TSH-001-S-RED"
+                    },
+                    "price": {
+                        "description": "Variant price",
+                        "type": "number",
+                        "format": "float",
+                        "example": 29.99
+                    },
+                    "compare_price": {
+                        "description": "Compare at price",
+                        "type": "number",
+                        "format": "float",
+                        "example": 39.99
+                    },
+                    "inventory_quantity": {
+                        "description": "Inventory quantity",
+                        "type": "integer",
+                        "example": 25
+                    },
+                    "track_inventory": {
+                        "description": "Whether to track inventory",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "inventory_policy": {
+                        "description": "Inventory policy",
+                        "type": "string",
+                        "enum": [
+                            "deny",
+                            "continue"
+                        ],
+                        "example": "deny"
+                    },
+                    "fulfillment_service": {
+                        "description": "Fulfillment service",
+                        "type": "string",
+                        "example": "manual"
+                    },
+                    "option1": {
+                        "description": "Option 1 value",
+                        "type": "string",
+                        "example": "Small"
+                    },
+                    "option2": {
+                        "description": "Option 2 value",
+                        "type": "string",
+                        "example": "Red"
+                    },
+                    "option3": {
+                        "description": "Option 3 value",
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "weight": {
+                        "description": "Variant weight",
+                        "type": "number",
+                        "format": "float",
+                        "example": 0.3
+                    },
+                    "weight_unit": {
+                        "description": "Weight unit",
+                        "type": "string",
+                        "enum": [
+                            "kg",
+                            "g",
+                            "lb",
+                            "oz"
+                        ],
+                        "example": "kg"
+                    },
+                    "barcode": {
+                        "description": "Barcode",
+                        "type": "string",
+                        "example": "1234567890123"
+                    },
+                    "image": {
+                        "description": "Variant images",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "variant1.jpg"
+                        ]
+                    },
+                    "requires_shipping": {
+                        "description": "Whether variant requires shipping",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "taxable": {
+                        "description": "Whether variant is taxable",
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "position": {
+                        "description": "Variant position",
+                        "type": "integer",
+                        "example": 1
+                    }
+                },
+                "type": "object"
+            },
+            "Product": {
+                "title": "Product",
+                "description": "Product model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "T-Shirt"
+                    },
+                    "description": {
+                        "type": "string",
+                        "example": "A comfortable cotton t-shirt"
+                    },
+                    "sku": {
+                        "type": "string",
+                        "example": "TSH-001"
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 29.99
+                    },
+                    "compare_price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 39.99
+                    },
+                    "inventory_quantity": {
+                        "type": "integer",
+                        "example": 100
+                    },
+                    "track_inventory": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "active",
+                            "inactive",
+                            "archived"
+                        ],
+                        "example": "active"
+                    },
+                    "vendor": {
+                        "type": "string",
+                        "example": "Brand Name"
+                    },
+                    "product_type": {
+                        "type": "string",
+                        "example": "Clothing"
+                    },
+                    "tags": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "cotton",
+                            "casual"
+                        ]
+                    },
+                    "images": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "image1.jpg",
+                            "image2.jpg"
+                        ]
+                    },
+                    "weight": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0.3
+                    },
+                    "weight_unit": {
+                        "type": "string",
+                        "enum": [
+                            "kg",
+                            "g",
+                            "lb",
+                            "oz"
+                        ],
+                        "example": "kg"
+                    },
+                    "requires_shipping": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "seo": {
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "example": "Comfortable Cotton T-Shirt"
+                            },
+                            "description": {
+                                "type": "string",
+                                "example": "Meta description for SEO"
+                            },
+                            "keywords": {
+                                "type": "string",
+                                "example": "t-shirt, cotton, clothing"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "variants": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ProductVariant"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "ProductVariant": {
+                "title": "ProductVariant",
+                "description": "Product variant model",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "product_id": {
+                        "type": "integer",
+                        "format": "int64",
+                        "example": 1
+                    },
+                    "title": {
+                        "type": "string",
+                        "example": "Small / Red"
+                    },
+                    "sku": {
+                        "type": "string",
+                        "example": "TSH-001-S-RED"
+                    },
+                    "price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 29.99
+                    },
+                    "compare_price": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 39.99
+                    },
+                    "inventory_quantity": {
+                        "type": "integer",
+                        "example": 25
+                    },
+                    "track_inventory": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "inventory_policy": {
+                        "type": "string",
+                        "enum": [
+                            "deny",
+                            "continue"
+                        ],
+                        "example": "deny"
+                    },
+                    "fulfillment_service": {
+                        "type": "string",
+                        "example": "manual"
+                    },
+                    "option1": {
+                        "type": "string",
+                        "example": "Small"
+                    },
+                    "option2": {
+                        "type": "string",
+                        "example": "Red"
+                    },
+                    "option3": {
+                        "type": "string",
+                        "example": null,
+                        "nullable": true
+                    },
+                    "weight": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 0.3
+                    },
+                    "weight_unit": {
+                        "type": "string",
+                        "enum": [
+                            "kg",
+                            "g",
+                            "lb",
+                            "oz"
+                        ],
+                        "example": "kg"
+                    },
+                    "barcode": {
+                        "type": "string",
+                        "example": "1234567890123"
+                    },
+                    "image": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "variant1.jpg"
+                        ]
+                    },
+                    "requires_shipping": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "taxable": {
+                        "type": "boolean",
+                        "example": true
+                    },
+                    "position": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Products",
+            "description": "API Endpoints for Product Management"
+        },
+        {
+            "name": "Inventory Management",
+            "description": "API endpoints for managing product and product variant inventory"
+        },
+        {
+            "name": "Product Variants",
+            "description": "API endpoints for managing product variants"
+        }
+    ]
+}
